@@ -4,8 +4,8 @@ export interface Contact {
   lastName: string,
   dateOfBirth: Date | null,
   favoritesRanking: number | null,
-  phone: Partial<Phone>,
-  address: Partial<Address>,
+  phone: Phone,
+  address: Address,
 }
 
 export interface Phone {
