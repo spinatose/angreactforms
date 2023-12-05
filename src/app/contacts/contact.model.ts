@@ -7,7 +7,7 @@ export interface Contact {
   favoritesRanking: number | null,
   phone: Phone,
   address: Address,
-  notes: string,
+  notes: string | void,
 }
 
 export interface Phone {
