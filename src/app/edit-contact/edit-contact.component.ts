@@ -14,6 +14,7 @@ export class EditContactComponent implements OnInit {
 
   // firstName = new FormControl('scot'); // can set init value this way
   contactForm = this.fb.nonNullable.group({
+    icon: '',
     id: '',
     personal: false,
     firstName: ['', [Validators.required, Validators.minLength(3)]],

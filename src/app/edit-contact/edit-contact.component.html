@@ -6,12 +6,13 @@
     <section>
       <nav>Name/Info</nav>
       <div>
+        <con-profile-icon-selector formControlName="icon" />
         <input formControlName="firstName" [class.error]="firstName.invalid && firstName.touched" placeholder="First Name" />
         <em *ngIf="firstName.errors?.['required'] && firstName.touched">Please enter a first name value.</em>
         <em *ngIf="firstName.errors?.['minlength'] && firstName.touched">First name must be at least 3 chars.</em>
         <input formControlName="lastName" placeholder="Last Name" />
         <input formControlName="dateOfBirth" type="date"
-          [value]="contactForm.controls.dateOfBirth.value | date:'yyyy-MM-dd'" placeholder="Date of Birth" />
+          placeholder="Date of Birth" />
         <div>
           <span>Favorites Ranking</span>
           <input formControlName="favoritesRanking" type="range" min="0" max="5" placeholder="Favorites Ranking" />
