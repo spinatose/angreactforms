@@ -21,17 +21,8 @@ export class EditContactComponent implements OnInit {
     lastName: '',
     dateOfBirth: <Date|null> null,
     favoritesRanking: <number|null> null,
-    phone: this.fb.nonNullable.group({
-      phoneNumber: '',
-      phoneType: '',
-    }),
-    address: this.fb.nonNullable.group({
-      streetAddress: ['', Validators.required],
-      city: ['', Validators.required],
-      state: ['', Validators.required],
-      postalCode: ['', Validators.required],
-      addressType: '',
-    }),
+    phones: this.fb.array([this.createPhoneGroup()]),
+    addresses: this.fb.array([this.createAddressGroup()]),
     notes: ['', restrictedWordsValidator(['crap', 'crud'])],
   });
 
@@ -56,12 +47,42 @@ export class EditContactComponent implements OnInit {
       if (!contact)
         return;
 
+      for (let i = 1; i < contact.addresses.length; i++)
+        this.addAddress();
+      for (let i = 1; i < contact.phones.length; i++)
+        this.addPhone();
+
       // use when we want to initialize all form controls
       this.contactForm.setValue(contact);
 
       // use this method to just init a subset of the total form controls
       // const justNames = { firstName: contact.firstName, lastName: contact.lastName };
       // this.contactForm.patchValue(justNames);
+    });
+  }
+
+  addAddress() {
+    this.contactForm.controls.addresses.push(this.createAddressGroup());
+  }
+
+  addPhone() {
+    this.contactForm.controls.phones.push(this.createPhoneGroup());
+  }
+
+  createAddressGroup() {
+    return this.fb.nonNullable.group({
+      streetAddress: ['', Validators.required],
+      city: ['', Validators.required],
+      state: ['', Validators.required],
+      postalCode: ['', Validators.required],
+      addressType: '',
+    });
+  }
+
+  createPhoneGroup() {
+    return this.fb.nonNullable.group({
+      phoneNumber: '',
+      phoneType: '',
     });
   }
 

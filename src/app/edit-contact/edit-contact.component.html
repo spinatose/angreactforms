@@ -7,12 +7,12 @@
       <nav>Name/Info</nav>
       <div>
         <con-profile-icon-selector formControlName="icon" />
-        <input formControlName="firstName" [class.error]="firstName.invalid && firstName.touched" placeholder="First Name" />
+        <input formControlName="firstName" [class.error]="firstName.invalid && firstName.touched"
+          placeholder="First Name" />
         <em *ngIf="firstName.errors?.['required'] && firstName.touched">Please enter a first name value.</em>
         <em *ngIf="firstName.errors?.['minlength'] && firstName.touched">First name must be at least 3 chars.</em>
         <input formControlName="lastName" placeholder="Last Name" />
-        <input formControlName="dateOfBirth" type="date"
-          placeholder="Date of Birth" />
+        <input formControlName="dateOfBirth" type="date" placeholder="Date of Birth" />
         <div>
           <span>Favorites Ranking</span>
           <input formControlName="favoritesRanking" type="range" min="0" max="5" placeholder="Favorites Ranking" />
@@ -24,35 +24,43 @@
       </div>
     </section>
     <section>
-      <nav>Phone</nav>
-      <div formGroupName="phone" class="flex-column">
-        <div class="flex-group">
-          <input formControlName="phoneNumber" placeholder="Phone" />
-          <img src="/assets/plus-grey-blue.png" class="add" />
-        </div>
-        <div class="radio">
-          <span *ngFor="let phoneType of phoneTypes">
-            <input type="radio" formControlName="phoneType" [value]="phoneType.value"> {{phoneType.title}}
-          </span>
+      <nav>Phones</nav>
+      <div formArrayName="phones">
+        <div *ngFor="let phone of contactForm.controls.phones.controls; let i = index;" [formGroupName]="i"
+          class="flex-column">
+          <div class="flex-group">
+            <input formControlName="phoneNumber" placeholder="Phone" />
+            <img src="/assets/plus-grey-blue.png" class="add" (click)="addPhone()" />
+          </div>
+          <div class="radio">
+            <span *ngFor="let phoneType of phoneTypes">
+              <input type="radio" formControlName="phoneType" [value]="phoneType.value"> {{phoneType.title}}
+            </span>
+          </div>
         </div>
       </div>
     </section>
     <section>
       <nav>Address</nav>
       <div>
-        <div formGroupName="address" [class.error]="contactForm.controls.address.invalid && contactForm.controls.address.dirty" class="address">
-          <div class="flex-group">
-            <input formControlName="streetAddress" placeholder="Address" />
-            <img src="/assets/plus-grey-blue.png" class="add" />
+        <div formArrayName="addresses">
+          <div *ngFor="let address of contactForm.controls.addresses.controls; let i = index;" [formGroupName]="i"
+           [class.error]="contactForm.controls.addresses.controls[i].invalid && contactForm.controls.addresses.controls[i].dirty" class="address">
+            <div class="flex-group">
+              <input formControlName="streetAddress" placeholder="Address" />
+              <img src="/assets/plus-grey-blue.png" class="add" (click)="addAddress()"/>
+            </div>
+            <input formControlName="city" placeholder="City" />
+            <input formControlName="state" placeholder="State/Region" />
+            <input formControlName="postalCode" placeholder="Zip/Postal Code" />
+            <select formControlName="addressType">
+              <option *ngFor="let addressType of addressTypes" [value]="addressType.value">{{addressType.title}}
+              </option>
+            </select>
+            <em *ngIf="contactForm.controls.addresses.controls[i].invalid && contactForm.controls.addresses.controls[i].dirty">Incomplete
+              address.</em>
           </div>
-          <input formControlName="city" placeholder="City" />
-          <input formControlName="state" placeholder="State/Region" />
-          <input formControlName="postalCode" placeholder="Zip/Postal Code" />
-          <select formControlName="addressType">
-            <option  *ngFor="let addressType of addressTypes" [value]="addressType.value">{{addressType.title}}</option>
-          </select>
         </div>
-        <em *ngIf="contactForm.controls.address.invalid && contactForm.controls.address.dirty">Incomplete address.</em>
       </div>
     </section>
     <section>
@@ -65,7 +73,7 @@
     </section>
     <div class="buttons">
       <button class="secondary">Cancel</button>
-      <button type="submit" class="primary" [disabled]="contactForm.invalid" >Save</button>
+      <button type="submit" class="primary" [disabled]="contactForm.invalid">Save</button>
     </div>
-</form>
+  </form>
 </div>
