@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ContactsService } from '../contacts/contacts.service';
 import { addressTypeValues, phoneTypeValues } from '../contacts/contact.model';
 import { restrictedWordsValidator } from '../validators/restricted-words.validator';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 @Component({
   templateUrl: './edit-contact.component.html',
   styleUrls: ['./edit-contact.component.css']
@@ -19,8 +20,8 @@ export class EditContactComponent implements OnInit {
     personal: false,
     firstName: ['', [Validators.required, Validators.minLength(3)]],
     lastName: '',
-    dateOfBirth: <Date|null> null,
-    favoritesRanking: <number|null> null,
+    dateOfBirth: <Date | null>null,
+    favoritesRanking: <number | null>null,
     phones: this.fb.array([this.createPhoneGroup()]),
     addresses: this.fb.array([this.createAddressGroup()]),
     notes: ['', restrictedWordsValidator(['crap', 'crud'])],
@@ -44,8 +45,10 @@ export class EditContactComponent implements OnInit {
     if (!contactId) return;
 
     this.contactsService.getContact(contactId).subscribe(contact => {
-      if (!contact)
+      if (!contact) {
+        this.subscribeToAddressChanges();
         return;
+      }
 
       for (let i = 1; i < contact.addresses.length; i++)
         this.addAddress();
@@ -54,6 +57,7 @@ export class EditContactComponent implements OnInit {
 
       // use when we want to initialize all form controls
       this.contactForm.setValue(contact);
+      this.subscribeToAddressChanges();
 
       // use this method to just init a subset of the total form controls
       // const justNames = { firstName: contact.firstName, lastName: contact.lastName };
@@ -80,10 +84,24 @@ export class EditContactComponent implements OnInit {
   }
 
   createPhoneGroup() {
-    return this.fb.nonNullable.group({
+    const phoneGroup = this.fb.nonNullable.group({
       phoneNumber: '',
       phoneType: '',
+      preferred: false,
     });
+
+    phoneGroup.controls.preferred.valueChanges
+      .pipe(distinctUntilChanged(this.stringifyCompare))
+      .subscribe(value => {
+        if (value)
+          phoneGroup.controls.phoneNumber.addValidators([Validators.required]);
+        else
+          phoneGroup.controls.phoneNumber.removeValidators([Validators.required]);   //.clearValidators();
+
+        phoneGroup.controls.phoneNumber.updateValueAndValidity();
+      });
+
+    return phoneGroup;
   }
 
   saveContact() {
@@ -92,5 +110,32 @@ export class EditContactComponent implements OnInit {
     this.contactsService.saveContact(this.contactForm.getRawValue()).subscribe({
       next: () => this.router.navigate(['/contacts'])
     })
+  }
+
+  stringifyCompare(a: any, b: any) {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
+  subscribeToAddressChanges() {
+    for (let i = 0; i < this.contactForm.controls.addresses.length; i++){
+      let addressGroup = this.contactForm.controls.addresses.controls[i];
+      addressGroup.valueChanges
+        .pipe(distinctUntilChanged(this.stringifyCompare))
+        .subscribe(() => {
+          for (const controlName in addressGroup.controls) {
+            addressGroup.get(controlName)?.removeValidators([Validators.required]);
+            addressGroup.get(controlName)?.updateValueAndValidity();
+          }
+        });
+
+      addressGroup.valueChanges
+        .pipe(debounceTime(2000), distinctUntilChanged(this.stringifyCompare))
+        .subscribe(() => {
+          for (const controlName in addressGroup.controls) {
+            addressGroup.get(controlName)?.addValidators([Validators.required]);
+            addressGroup.get(controlName)?.updateValueAndValidity();
+          }
+        });
+    }
   }
 }
